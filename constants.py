@@ -23,6 +23,10 @@ data_segments = [
     'pointer'
 ]
 
+equivalent_data_segments = [
+    'this', 'that', 'argument', 'local'
+]
+
 segment_base_addr = {
     'this': 'THIS',
     'that': 'THAT',

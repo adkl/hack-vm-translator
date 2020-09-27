@@ -1,4 +1,4 @@
-from constants import pseudo_assembly as a, segment_base_addr
+from constants import pseudo_assembly as a, segment_base_addr, equivalent_data_segments
 
 
 class Encoder:
@@ -139,7 +139,7 @@ class Encoder:
 
     @classmethod
     def _encode_push(cls, segment, i):
-        if segment in segment_base_addr.keys():
+        if segment in equivalent_data_segments:
             return f'''
                 // push {segment} {i}
                 @{i}
@@ -194,7 +194,7 @@ class Encoder:
 
     @classmethod
     def _encode_pop(cls, segment, i):
-        if segment in segment_base_addr.keys():
+        if segment in equivalent_data_segments:
             return f'''
                 // pop {segment} {i}
                 @{segment_base_addr[segment]}

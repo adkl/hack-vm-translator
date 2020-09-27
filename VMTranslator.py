@@ -21,8 +21,6 @@ class VMTranslator:
         for line in file_lines:
             parser = Parser(line)
 
-            print(parser.instruction_type, parser.segment, parser.i)
-
             asm_code = self._generate_asm_code(parser)
 
             if asm_code:
