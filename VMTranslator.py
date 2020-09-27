@@ -1,8 +1,8 @@
 import sys
 
-from src.encoder import Encoder
-from src.enumerations import ArithmeticInstruction, MemoryInstruction
-from src.parser import Parser
+from encoder import Encoder
+from enumerations import ArithmeticInstruction, MemoryInstruction
+from parser import Parser
 
 
 class VMTranslator:

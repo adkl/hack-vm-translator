@@ -1,4 +1,4 @@
-from src.constants import pseudo_assembly as a, segment_base_addr
+from constants import pseudo_assembly as a, segment_base_addr
 
 
 class Encoder:

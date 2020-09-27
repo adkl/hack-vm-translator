@@ -1,4 +1,4 @@
-from src.enumerations import ArithmeticInstruction, MemoryInstruction
+from enumerations import ArithmeticInstruction, MemoryInstruction
 
 arithmetic_instructions = [
     'add',

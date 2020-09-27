@@ -1,9 +1,9 @@
 import re
 from typing import Union
 
-from src.constants import re_group_separator, arithmetic_instructions, data_segments, ArithmeticInstructionMapping, \
+from constants import re_group_separator, arithmetic_instructions, data_segments, ArithmeticInstructionMapping, \
     MemoryInstructionMapping
-from src.enumerations import ArithmeticInstruction, MemoryInstruction
+from enumerations import ArithmeticInstruction, MemoryInstruction
 
 
 class Parser:
