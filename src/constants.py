@@ -27,7 +27,9 @@ segment_base_addr = {
     'this': 'THIS',
     'that': 'THAT',
     'argument': 'ARG',
-    'local': 'LCL'
+    'local': 'LCL',
+    'temp': 5,
+    'static': 16
 }
 
 re_group_separator = '|'

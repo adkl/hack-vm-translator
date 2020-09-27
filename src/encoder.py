@@ -151,12 +151,12 @@ class Encoder:
                 {a['SP=A+1']}
             '''
 
-        if segment == 'temp':
+        if segment in ['temp', 'static']:
             return f'''
                 // push {segment} {i}
                 @{i}
                 D=A
-                @5
+                @{segment_base_addr[segment]}
                 A=D+A
                 D=M
                 {a['*SP=D']}
@@ -168,15 +168,6 @@ class Encoder:
                 // push {segment} {i}
                 @{i}
                 D=A
-                {a['*SP=D']}
-                {a['SP=A+1']}
-            '''
-
-        if segment == 'static':
-            return f'''
-                // push {segment} {i}
-                @Static.{i}
-                D=M
                 {a['*SP=D']}
                 {a['SP=A+1']}
             '''
@@ -219,10 +210,10 @@ class Encoder:
                 M=M-1
             '''
 
-        if segment == 'temp':
+        if segment in ['temp', 'static']:
             return f'''
                 // pop {segment} {i}
-                @5
+                @{segment_base_addr[segment]}
                 D=A     // D = 5
                 @{i}
                 D=A+D   // D = 5+3 = 8
@@ -233,15 +224,6 @@ class Encoder:
                 M=D-A   // *(seg+i) = 500
                 @SP     // SP--
                 M=M-1
-            '''
-
-        if segment == 'static':
-            return f'''
-                // pop {segment} {i}
-                {a['D=*(SP-1)']}
-                @Static.{i}
-                M=D
-                {a['SP=A']}
             '''
 
         if segment == 'pointer':
