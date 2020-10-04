@@ -28,7 +28,7 @@ class Encoder:
         '''
 
     @classmethod
-    def _encode_neg(cls):
+    def encode_neg(cls):
         return '''
             // neg
             @SP
@@ -37,7 +37,7 @@ class Encoder:
         '''
 
     @classmethod
-    def _encode_eq(cls):
+    def encode_eq(cls):
         cls.EQ_COUNTER += 1
 
         return f'''
@@ -61,7 +61,7 @@ class Encoder:
         '''
 
     @classmethod
-    def _encode_gt(cls):
+    def encode_gt(cls):
         cls.GT_COUNTER += 1
 
         return f'''
@@ -85,7 +85,7 @@ class Encoder:
         '''
 
     @classmethod
-    def _encode_lt(cls):
+    def encode_lt(cls):
         cls.LT_COUNTER += 1
 
         return f'''
@@ -109,7 +109,7 @@ class Encoder:
         '''
 
     @classmethod
-    def _encode_and(cls):
+    def encode_and(cls):
         return f'''
             // and
             {a['D=*(SP-1)']}
@@ -119,7 +119,7 @@ class Encoder:
         '''
 
     @classmethod
-    def _encode_or(cls):
+    def encode_or(cls):
         return f'''
             // or
             {a['D=*(SP-1)']}
@@ -129,7 +129,7 @@ class Encoder:
         '''
 
     @classmethod
-    def _encode_not(cls):
+    def encode_not(cls):
         return '''
             // not
             @SP
@@ -247,3 +247,54 @@ class Encoder:
                 @SP
                 M=M-1
             '''
+
+    @classmethod
+    def _encode_return(cls):
+        pass
+
+    @classmethod
+    def encode_call(cls, function_name, n):
+        return f'''
+            
+        '''
+
+    @classmethod
+    def _encode_function(cls, file_name, function_name, n):
+        return f'''
+        ({function_name})
+            @{n}
+            D=A
+            ({file_name}{function_name}START_INIT_LOOP)
+                @{file_name}{function_name}END_INIT_LOOP
+                D;JEQ  // if d == 0 -> exit loop
+                @SP
+                A=M
+                M=0
+                D=D-1
+                @SP
+                M=M+1
+                @{file_name}{function_name}START_INIT_LOOP
+                0;JMP
+            ({file_name}{function_name}END_INIT_LOOP)
+        '''
+
+    @classmethod
+    def encode_label(cls, file_name, label):
+        return f'({file_name}.{label})'
+
+    @classmethod
+    def encode_goto(cls, file_name, label):
+        return f'''
+            @{file_name}.{label}
+            0;JMP
+        '''
+
+    @classmethod
+    def encode_ifgoto(cls, file_name, label):
+        return f'''
+            {a['D=*(SP-1)']}
+            @SP
+            M=M-1
+            @{file_name}.{label}
+            D+1;JNE
+        '''

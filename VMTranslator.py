@@ -1,53 +1,87 @@
 import sys
+from pathlib import Path
 
 from encoder import Encoder
-from enumerations import ArithmeticInstruction, MemoryInstruction
+from enumerations import ArithmeticInstruction, MemoryInstruction, FunctionInstruction, BranchingInstruction
 from parser import Parser
 
 
 class VMTranslator:
 
-    def __init__(self, vm_file_path: str):
-        self.vm_file_path = vm_file_path
+    def __init__(self, vm_code_path: str):
+        self.vm_files_paths = self._vm_file_paths(vm_code_path)
+        self.asm_file_path = self._resolve_asm_file_path(vm_code_path)
 
-        self.asm_file_path = vm_file_path.replace(vm_file_path.split('.')[-1], 'asm')
+    def _vm_file_paths(self, input_path: str):
+        path = Path(input_path)
+
+        if path.is_dir():
+            return list(map(lambda e: str(e), filter(lambda e: e.suffix == '.vm', path.iterdir())))
+
+        return [input_path]
+
+    def _resolve_asm_file_path(self, input_path: str) -> str:
+        path = Path(input_path)
+
+        if path.is_dir():
+            return str(path.joinpath(path.name).with_suffix('.asm'))
+
+        return str(Path(input_path).with_suffix('.asm'))
 
     def run(self):
-        vm_file = open(file=self.vm_file_path, mode='r')
-        file_lines = vm_file.readlines()
-
         asm_file = open(self.asm_file_path, 'w')
 
-        for line in file_lines:
-            parser = Parser(line)
+        for vm_file_path in self.vm_files_paths:
+            vm_file = open(file=vm_file_path, mode='r')
+            file_lines = vm_file.readlines()
 
-            asm_code = self._generate_asm_code(parser)
+            for line in file_lines:
+                parser = Parser(line)
 
-            if asm_code:
-                asm_file.write(asm_code)
+                asm_code = self._generate_asm_code(parser, Path(vm_file_path).name)
 
-        vm_file.close()
+                if asm_code:
+                    asm_file.write(asm_code)
+
+            vm_file.close()
         asm_file.close()
 
-    def _generate_asm_code(self, parser: Parser):
+    def run_single_file(self, name):
+        pass
+
+    def _generate_asm_code(self, parser: Parser, file_name: str):
         if parser.instruction_type == ArithmeticInstruction.add:
             return Encoder._encode_add()
         if parser.instruction_type == ArithmeticInstruction.sub:
             return Encoder._encode_sub()
         if parser.instruction_type == ArithmeticInstruction.eq:
-            return Encoder._encode_eq()
+            return Encoder.encode_eq()
         if parser.instruction_type == ArithmeticInstruction.and_:
-            return Encoder._encode_and()
+            return Encoder.encode_and()
         if parser.instruction_type == ArithmeticInstruction.gt:
-            return Encoder._encode_gt()
+            return Encoder.encode_gt()
         if parser.instruction_type == ArithmeticInstruction.or_:
-            return Encoder._encode_or()
+            return Encoder.encode_or()
         if parser.instruction_type == ArithmeticInstruction.lt:
-            return Encoder._encode_lt()
+            return Encoder.encode_lt()
         if parser.instruction_type == ArithmeticInstruction.not_:
-            return Encoder._encode_not()
+            return Encoder.encode_not()
         if parser.instruction_type == ArithmeticInstruction.neg:
-            return Encoder._encode_neg()
+            return Encoder.encode_neg()
+
+        if parser.instruction_type == BranchingInstruction.goto:
+            return Encoder.encode_goto(file_name, parser.label)
+        if parser.instruction_type == BranchingInstruction.ifgoto:
+            return Encoder.encode_ifgoto(file_name, parser.label)
+        if parser.instruction_type == BranchingInstruction.label:
+            return Encoder.encode_label(file_name, parser.label)
+
+        if parser.instruction_type == FunctionInstruction.call:
+            return Encoder.encode_call(parser.function_name, parser.n)
+        if parser.instruction_type == FunctionInstruction.function:
+            return Encoder._encode_function(file_name, parser.function_name, parser.n)
+        if parser.instruction_type == FunctionInstruction.return_:
+            return Encoder._encode_return()
 
         if parser.instruction_type == MemoryInstruction.push:
             return Encoder._encode_push(parser.segment, parser.i)

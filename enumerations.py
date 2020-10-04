@@ -16,3 +16,15 @@ class ArithmeticInstruction(Enum):
 class MemoryInstruction(Enum):
     push = 1
     pop = 2
+
+
+class BranchingInstruction(Enum):
+    goto = 'goto'
+    ifgoto = 'if-goto'
+    label = 'label'
+
+
+class FunctionInstruction(Enum):
+    call = 1
+    function = 2
+    return_ = 3
