@@ -9,6 +9,8 @@ from parser import Parser
 class VMTranslator:
 
     def __init__(self, vm_code_path: str):
+        self.is_dir = False
+
         self.vm_files_paths = self._vm_file_paths(vm_code_path)
         self.asm_file_path = self._resolve_asm_file_path(vm_code_path)
 
@@ -16,6 +18,7 @@ class VMTranslator:
         path = Path(input_path)
 
         if path.is_dir():
+            self.is_dir = True
             return list(map(lambda e: str(e), filter(lambda e: e.suffix == '.vm', path.iterdir())))
 
         return [input_path]
@@ -30,6 +33,9 @@ class VMTranslator:
 
     def run(self):
         asm_file = open(self.asm_file_path, 'w')
+
+        if self.is_dir:
+            asm_file.write(Encoder.bootstrap_code())
 
         for vm_file_path in self.vm_files_paths:
             vm_file = open(file=vm_file_path, mode='r')
@@ -46,14 +52,11 @@ class VMTranslator:
             vm_file.close()
         asm_file.close()
 
-    def run_single_file(self, name):
-        pass
-
     def _generate_asm_code(self, parser: Parser, file_name: str):
         if parser.instruction_type == ArithmeticInstruction.add:
-            return Encoder._encode_add()
+            return Encoder.encode_add()
         if parser.instruction_type == ArithmeticInstruction.sub:
-            return Encoder._encode_sub()
+            return Encoder.encode_sub()
         if parser.instruction_type == ArithmeticInstruction.eq:
             return Encoder.encode_eq()
         if parser.instruction_type == ArithmeticInstruction.and_:
@@ -79,15 +82,15 @@ class VMTranslator:
         if parser.instruction_type == FunctionInstruction.call:
             return Encoder.encode_call(parser.function_name, parser.n)
         if parser.instruction_type == FunctionInstruction.function:
-            return Encoder._encode_function(file_name, parser.function_name, parser.n)
+            return Encoder.encode_function(parser.function_name, parser.n)
         if parser.instruction_type == FunctionInstruction.return_:
-            return Encoder._encode_return()
+            return Encoder.encode_return()
 
         if parser.instruction_type == MemoryInstruction.push:
-            return Encoder._encode_push(parser.segment, parser.i)
+            return Encoder.encode_push(parser.segment, parser.i)
 
         if parser.instruction_type == MemoryInstruction.pop:
-            return Encoder._encode_pop(parser.segment, parser.i)
+            return Encoder.encode_pop(parser.segment, parser.i)
 
 
 if __name__ == '__main__':

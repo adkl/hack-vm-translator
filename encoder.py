@@ -6,9 +6,10 @@ class Encoder:
     GT_COUNTER = 0
     LT_COUNTER = 0
     PT_COUNTER = 0
+    CALL_COUNTER = 0
 
     @classmethod
-    def _encode_add(cls):
+    def encode_add(cls):
         return f'''
             // add
             {a['D=*(SP-1)']}
@@ -18,7 +19,7 @@ class Encoder:
         '''
 
     @classmethod
-    def _encode_sub(cls):
+    def encode_sub(cls):
         return f'''
             // sub
             {a['D=*(SP-1)']}
@@ -138,7 +139,7 @@ class Encoder:
         '''
 
     @classmethod
-    def _encode_push(cls, segment, i):
+    def encode_push(cls, segment, i):
         if segment in equivalent_data_segments:
             return f'''
                 // push {segment} {i}
@@ -193,7 +194,7 @@ class Encoder:
             '''
 
     @classmethod
-    def _encode_pop(cls, segment, i):
+    def encode_pop(cls, segment, i):
         if segment in equivalent_data_segments:
             return f'''
                 // pop {segment} {i}
@@ -249,23 +250,111 @@ class Encoder:
             '''
 
     @classmethod
-    def _encode_return(cls):
-        pass
-
-    @classmethod
-    def encode_call(cls, function_name, n):
+    def encode_return(cls):
         return f'''
-            
+            // return
+            @LCL
+            D=M
+            @endFrame
+            M=D
+            @5
+            A=D-A
+            D=M
+            @retAddress
+            M=D
+            // *ARG = *(SP-1)
+            {a['D=*(SP-1)']}
+            @ARG
+            A=M
+            M=D
+            // SP = ARG + 1
+            @ARG
+            D=M+1
+            @SP
+            M=D
+            @endFrame
+            M=M-1
+            A=M
+            D=M
+            @THAT
+            M=D
+            @endFrame
+            M=M-1
+            A=M
+            D=M
+            @THIS
+            M=D
+            @endFrame
+            M=M-1
+            A=M
+            D=M
+            @ARG
+            M=D
+            @endFrame
+            M=M-1
+            A=M
+            D=M
+            @LCL
+            M=D
+            @retAddress
+            A=M
+            0;JMP
         '''
 
     @classmethod
-    def _encode_function(cls, file_name, function_name, n):
+    def encode_call(cls, function_name, n):
+        cls.CALL_COUNTER += 1
+
         return f'''
+            // call
+            @{function_name}.ret{cls.CALL_COUNTER}
+            D=A
+            {a['*SP=D']}
+            {a['SP=A+1']}
+            @LCL
+            D=M
+            {a['*SP=D']}
+            {a['SP=A+1']}
+            @ARG
+            D=M
+            {a['*SP=D']}
+            {a['SP=A+1']}
+            @THIS
+            D=M
+            {a['*SP=D']}
+            {a['SP=A+1']}
+            @THAT
+            D=M
+            {a['*SP=D']}
+            {a['SP=A+1']}
+            ({function_name}.ret{cls.CALL_COUNTER})
+            // reposition ARG
+            @5
+            D=A
+            @{n}
+            D=D+A
+            @SP
+            D=M-D
+            @ARG
+            M=D
+            // reposition LCL
+            @SP
+            D=M
+            @LCL
+            M=D
+            @{function_name}
+            0;JMP
+        '''
+
+    @classmethod
+    def encode_function(cls, function_name, n):
+        return f'''
+        // function
         ({function_name})
             @{n}
             D=A
-            ({file_name}{function_name}START_INIT_LOOP)
-                @{file_name}{function_name}END_INIT_LOOP
+            ({function_name}START_INIT_LOOP)
+                @{function_name}END_INIT_LOOP
                 D;JEQ  // if d == 0 -> exit loop
                 @SP
                 A=M
@@ -273,9 +362,9 @@ class Encoder:
                 D=D-1
                 @SP
                 M=M+1
-                @{file_name}{function_name}START_INIT_LOOP
+                @{function_name}START_INIT_LOOP
                 0;JMP
-            ({file_name}{function_name}END_INIT_LOOP)
+            ({function_name}END_INIT_LOOP)
         '''
 
     @classmethod
@@ -285,6 +374,7 @@ class Encoder:
     @classmethod
     def encode_goto(cls, file_name, label):
         return f'''
+            // goto
             @{file_name}.{label}
             0;JMP
         '''
@@ -292,9 +382,20 @@ class Encoder:
     @classmethod
     def encode_ifgoto(cls, file_name, label):
         return f'''
+            // if-goto
             {a['D=*(SP-1)']}
             @SP
             M=M-1
             @{file_name}.{label}
             D+1;JNE
+        '''
+
+    @classmethod
+    def bootstrap_code(cls):
+        return f'''
+            @256
+            D=A
+            @SP
+            M=D
+            {cls.encode_call('Sys.init', 0)}
         '''

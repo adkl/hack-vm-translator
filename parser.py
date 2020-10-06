@@ -11,10 +11,10 @@ class Parser:
     MEMORY_PATTERN = re.compile('^(?P<stack_op>pop|push) '
                                 f'(?P<segment>{re_group_separator.join(data_segments)}) '
                                 '(?P<i>[0-9]+)')
-    FUNCTION_PATTERN = re.compile('function (?P<name>.+) (?P<n>[0-9]+)')
+    FUNCTION_PATTERN = re.compile('function (?P<name>\S+) (?P<n>[0-9]+)')
     RETURN_PATTERN = re.compile('return')
-    CALL_PATTERN = re.compile('call (?P<name>.+) (?P<n>[0-9]+)')
-    BRANCHING_PATTERN = re.compile('(?P<cmd>goto|if-goto|label) (?P<label>.+)')
+    CALL_PATTERN = re.compile('call (?P<name>\S+) (?P<n>[0-9]+)')
+    BRANCHING_PATTERN = re.compile('(?P<cmd>goto|if-goto|label) (?P<label>\S+)')
 
     def __init__(self, instruction: str):
         self._instruction_type = None
