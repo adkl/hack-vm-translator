@@ -139,7 +139,7 @@ class Encoder:
         '''
 
     @classmethod
-    def encode_push(cls, segment, i):
+    def encode_push(cls, file_name, segment, i):
         if segment in equivalent_data_segments:
             return f'''
                 // push {segment} {i}
@@ -152,13 +152,22 @@ class Encoder:
                 {a['SP=A+1']}
             '''
 
-        if segment in ['temp', 'static']:
+        if segment == 'temp':
             return f'''
                 // push {segment} {i}
                 @{i}
                 D=A
                 @{segment_base_addr[segment]}
                 A=D+A
+                D=M
+                {a['*SP=D']}
+                {a['SP=A+1']}
+            '''
+
+        if segment == 'static':
+            return f'''
+                // push {segment} {i}
+                @{file_name}.static.{i}
                 D=M
                 {a['*SP=D']}
                 {a['SP=A+1']}
@@ -194,7 +203,7 @@ class Encoder:
             '''
 
     @classmethod
-    def encode_pop(cls, segment, i):
+    def encode_pop(cls, file_name, segment, i):
         if segment in equivalent_data_segments:
             return f'''
                 // pop {segment} {i}
@@ -211,7 +220,7 @@ class Encoder:
                 M=M-1
             '''
 
-        if segment in ['temp', 'static']:
+        if segment == 'temp':
             return f'''
                 // pop {segment} {i}
                 @{segment_base_addr[segment]}
@@ -225,6 +234,16 @@ class Encoder:
                 M=D-A   // *(seg+i) = 500
                 @SP     // SP--
                 M=M-1
+            '''
+
+        if segment == 'static':
+            return f'''
+                // pop {segment} {i}
+                {a['D=*(SP-1)']}
+                @SP
+                M=M-1
+                @{file_name}.static.{i}
+                M=D
             '''
 
         if segment == 'pointer':
@@ -327,7 +346,6 @@ class Encoder:
             D=M
             {a['*SP=D']}
             {a['SP=A+1']}
-            ({function_name}.ret{cls.CALL_COUNTER})
             // reposition ARG
             @5
             D=A
@@ -344,6 +362,7 @@ class Encoder:
             M=D
             @{function_name}
             0;JMP
+            ({function_name}.ret{cls.CALL_COUNTER})
         '''
 
     @classmethod

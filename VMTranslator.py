@@ -87,10 +87,10 @@ class VMTranslator:
             return Encoder.encode_return()
 
         if parser.instruction_type == MemoryInstruction.push:
-            return Encoder.encode_push(parser.segment, parser.i)
+            return Encoder.encode_push(file_name, parser.segment, parser.i)
 
         if parser.instruction_type == MemoryInstruction.pop:
-            return Encoder.encode_pop(parser.segment, parser.i)
+            return Encoder.encode_pop(file_name, parser.segment, parser.i)
 
 
 if __name__ == '__main__':
