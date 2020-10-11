@@ -281,13 +281,11 @@ class Encoder:
             D=M
             @retAddress
             M=D
-            // *ARG = *(SP-1)
-            {a['D=*(SP-1)']}
+            {a['D=*(SP-1)']}  // *ARG = *(SP-1)
             @ARG
             A=M
             M=D
-            // SP = ARG + 1
-            @ARG
+            @ARG  // SP = ARG + 1
             D=M+1
             @SP
             M=D
@@ -325,7 +323,7 @@ class Encoder:
         cls.CALL_COUNTER += 1
 
         return f'''
-            // call
+            // call {function_name}
             @{function_name}.ret{cls.CALL_COUNTER}
             D=A
             {a['*SP=D']}
@@ -346,8 +344,7 @@ class Encoder:
             D=M
             {a['*SP=D']}
             {a['SP=A+1']}
-            // reposition ARG
-            @5
+            @5  // reposition ARG
             D=A
             @{n}
             D=D+A
@@ -355,8 +352,7 @@ class Encoder:
             D=M-D
             @ARG
             M=D
-            // reposition LCL
-            @SP
+            @SP  // reposition LCL
             D=M
             @LCL
             M=D
@@ -368,7 +364,7 @@ class Encoder:
     @classmethod
     def encode_function(cls, function_name, n):
         return f'''
-        // function
+        // function {function_name}
         ({function_name})
             @{n}
             D=A
@@ -393,7 +389,7 @@ class Encoder:
     @classmethod
     def encode_goto(cls, file_name, label):
         return f'''
-            // goto
+            // goto {label}
             @{file_name}.{label}
             0;JMP
         '''
@@ -401,12 +397,12 @@ class Encoder:
     @classmethod
     def encode_ifgoto(cls, file_name, label):
         return f'''
-            // if-goto
+            // if-goto {label}
             {a['D=*(SP-1)']}
             @SP
             M=M-1
             @{file_name}.{label}
-            D+1;JNE
+            D;JNE
         '''
 
     @classmethod
